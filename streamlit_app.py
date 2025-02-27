@@ -2,52 +2,58 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
 
 # Настройки страницы
 st.set_page_config(page_title="Parkinson's Prediction", layout="centered")
 
 # Заголовок приложения
 st.title("🧠 Parkinson's Disease Prediction")
-st.write("Введите параметры голоса, и модель предскажет вероятность заболевания.")
+st.write("Введите параметры, и модель предскажет вероятность заболевания.")
 
 # Загружаем данные
-file_path = "parkinsons.data"  # Локальный файл
+file_path = "parkinsons.data"
 df = pd.read_csv(file_path)
 
 # Удаляем ненужный столбец "name"
 df = df.drop(columns=["name"])
 
+# Вычисляем корреляцию с целевой переменной
+correlations = df.corr()["status"].abs().sort_values(ascending=False)
+
+# Выбираем три наиболее коррелирующих признака (среди числовых)
+valid_features = [col for col in correlations.index if df[col].nunique() > 10]
+top_features = valid_features[1:4]  # Пропускаем "status"
+
 # Разделяем данные на признаки и целевую переменную
-X = df.drop(columns=["status"])
+X = df[top_features[:2]]  # Два самых коррелирующих признака
 y = df["status"]
 
-# Разделяем на обучающую и тестовую выборки
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# Разделяем на обучающую (70%) и тестовую (30%) выборки
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
 
-# Стандартизация данных
+# Выполняем стандартизацию признаков
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 # Обучаем логистическую регрессию
-model = LogisticRegression(max_iter=565, random_state=42)
-model.fit(X_train_scaled, y_train)
-
-# Оценка модели
-y_pred = model.predict(X_test_scaled)
-accuracy = accuracy_score(y_test, y_pred)
+logreg_model = LogisticRegression(max_iter=565)
+logreg_model.fit(X_train_scaled, y_train)
+y_pred = logreg_model.predict(X_test_scaled)
 
 # Отображаем accuracy
-st.write(f"📊 **Точность модели:** {accuracy:.2%}")
+st.write(f"📊 **Точность модели:** {logreg_model.score(X_test_scaled, y_test):.2%}")
 
 # Создаём боковую панель для ввода данных
 st.sidebar.header("Введите признаки:")
 
-# Поля для ввода параметров
+# Поля для ввода параметров (используем два самых коррелирующих признака)
 user_input = {}
 for col in X.columns:
     user_input[col] = st.sidebar.slider(col, float(df[col].min()), float(df[col].max()), float(df[col].mean()))
@@ -59,8 +65,8 @@ input_data = pd.DataFrame([user_input])
 input_scaled = scaler.transform(input_data)
 
 # Делаем предсказание
-prediction = model.predict(input_scaled)
-prediction_proba = model.predict_proba(input_scaled)
+prediction = logreg_model.predict(input_scaled)
+prediction_proba = logreg_model.predict_proba(input_scaled)
 
 # Отображаем результат
 st.subheader("🔍 Результаты предсказания:")
@@ -76,8 +82,15 @@ st.dataframe(df_prediction_proba)
 # Визуализация данных
 st.subheader("📊 Визуализация данных")
 
-fig = px.scatter(df, x="MDVP:Fo(Hz)", y="MDVP:Jitter(%)", color="status", title="Голосовые характеристики")
+fig = px.scatter(df, x=top_features[0], y=top_features[1], color="status", title="Два наиболее коррелирующих признака")
 st.plotly_chart(fig)
 
-fig2 = px.histogram(df, x="PPE", color="status", nbins=30, title="Распределение PPE (Pitch Period Entropy)")
-st.plotly_chart(fig2)
+# 3D Визуализация
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection="3d")
+scatter = ax.scatter(df[top_features[0]], df[top_features[1]], df[top_features[2]], c=df["status"], cmap="coolwarm")
+ax.set_xlabel(top_features[0])
+ax.set_ylabel(top_features[1])
+ax.set_zlabel(top_features[2])
+plt.title("3D Визуализация трех наиболее коррелирующих признаков")
+st.pyplot(fig)
