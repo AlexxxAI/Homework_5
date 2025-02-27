@@ -113,20 +113,22 @@ st.pyplot(fig)
 
 # Скачивание предсказаний
 st.subheader("📥 Сохранение предсказаний")
-# Когда предсказание сделано и мы генерируем DataFrame:
 if st.button("💾 Скачать CSV с результатами"):
-    result_df = pd.DataFrame(user_input, index=[0])
-    result_df["Предсказание"] = "Паркинсон" if prediction[0] == 1 else "Здоров"
-    
-    # Используем StringIO для создания файла в памяти
-    csv_buffer = io.StringIO()
-    result_df.to_csv(csv_buffer, index=False)
-    csv_buffer.seek(0)
-    
-    # Создаем кнопку для скачивания
-    st.download_button(
-        label="📥 Скачать",
-        data=csv_buffer,
-        file_name="prediction_results.csv",
-        mime="text/csv"
-    )
+    if prediction is not None:  # Проверка, что предсказание было сделано
+        result_df = pd.DataFrame(user_input, index=[0])
+        result_df["Предсказание"] = "Паркинсон" if prediction[0] == 1 else "Здоров"
+        
+        # Используем StringIO для создания файла в памяти
+        csv_buffer = io.StringIO()
+        result_df.to_csv(csv_buffer, index=False)
+        csv_buffer.seek(0)
+        
+        # Создаем кнопку для скачивания
+        st.download_button(
+            label="📥 Скачать",
+            data=csv_buffer,
+            file_name="prediction_results.csv",
+            mime="text/csv"
+        )
+    else:
+        st.error("Сначала сделайте предсказание.")
