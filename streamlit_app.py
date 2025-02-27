@@ -69,6 +69,9 @@ for col in X.columns:
 input_data = pd.DataFrame([user_input])
 input_scaled = scaler.transform(input_data)
 
+# Инициализация переменной предсказания как None
+prediction = None
+
 # Кнопка предсказания
 if st.sidebar.button("Сделать предсказание"):
     prediction = logreg_model.predict(input_scaled)
@@ -109,17 +112,20 @@ st.pyplot(fig)
 
 # Скачивание предсказаний
 st.subheader("📥 Сохранение предсказаний")
-if st.button("💾 Скачать CSV с результатами"):
-    result_df = pd.DataFrame(user_input, index=[0])
-    result_df["Предсказание"] = "Паркинсон" if prediction[0] == 1 else "Здоров"
-    
-    # Преобразуем DataFrame в CSV-формат
-    csv = result_df.to_csv(index=False)
-    
-    # Создаем кнопку для скачивания
-    st.download_button(
-        label="📥 Скачать результат",
-        data=csv,
-        file_name="prediction_results.csv",
-        mime="text/csv"
-    )
+if prediction is not None:
+    if st.button("💾 Скачать CSV с результатами"):
+        result_df = pd.DataFrame(user_input, index=[0])
+        result_df["Предсказание"] = "Паркинсон" if prediction[0] == 1 else "Здоров"
+        
+        # Преобразуем DataFrame в CSV-формат
+        csv = result_df.to_csv(index=False)
+        
+        # Создаем кнопку для скачивания
+        st.download_button(
+            label="📥 Скачать результат",
+            data=csv,
+            file_name="prediction_results.csv",
+            mime="text/csv"
+        )
+else:
+    st.warning("⚠️ Пожалуйста, сделайте предсказание перед скачиванием.")
