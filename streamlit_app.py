@@ -6,7 +6,6 @@
 # 5) Feature Importance – визуализация важности признаков.
 # 6) Тепловая карта корреляций – интерактивный анализ данных.
 # 7) Сохранение предсказаний – возможность скачать CSV
-# 8) Голосовой ввод – ввод признаков с микрофона.
 
 import streamlit as st
 import pandas as pd
@@ -56,28 +55,12 @@ logreg_model.fit(X_train_scaled, y_train)
 st.sidebar.header("Введите признаки:")
 feature_names = {"spread1": "Разброс частот (spread1)", "PPE": "Дрожание голоса (PPE)"}
 
-def voice_input():
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.sidebar.write("Говорите...")
-        try:
-            audio = r.listen(source, timeout=5)
-            text = r.recognize_google(audio, language='ru-RU')
-            return float(text)
-        except:
-            return None
-
+user_input = {}
 for col in X.columns:
-    if st.sidebar.checkbox(f"🎙 Голосовой ввод {feature_names[col]}"):
-        val = voice_input()
-        user_input[col] = val if val is not None else float(df[col].mean())
-    else:
-        user_input[col] = st.sidebar.slider(feature_names[col], float(df[col].min()), float(df[col].max()), float(df[col].mean()))
+    user_input[col] = st.sidebar.slider(feature_names[col], float(df[col].min()), float(df[col].max()), float(df[col].mean()))
 
 input_data = pd.DataFrame([user_input])
 input_scaled = scaler.transform(input_data)
-prediction = logreg_model.predict(input_scaled)
-prediction_proba = logreg_model.predict_proba(input_scaled)
 
 # Кнопка предсказания
 if st.sidebar.button("Сделать предсказание"):
