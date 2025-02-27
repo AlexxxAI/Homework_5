@@ -6,16 +6,15 @@
 # 5) Feature Importance – визуализация важности признаков.
 # 6) Сохранение предсказаний – возможность скачать CSV
 
+
 import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report
 import shap
 
 # Настройки страницы
@@ -77,8 +76,12 @@ if st.sidebar.button("Сделать предсказание"):
     df_prediction_proba = pd.DataFrame(prediction_proba, columns=["Здоров", "Паркинсон"])
     
     st.subheader("🔍 Результаты предсказания:")
+    
     if prediction[0] == 1:
-        st.error("⚠️ Высокая вероятность болезни Паркинсона!")
+        st.markdown(
+            "<div style='background-color: #ffcccc; padding: 10px; border-radius: 5px;'><strong>⚠️ Высокая вероятность болезни Паркинсона!</strong></div>",
+            unsafe_allow_html=True
+        )
     else:
         st.success("✅ Низкая вероятность болезни Паркинсона.")
     
@@ -104,9 +107,19 @@ fig, ax = plt.subplots()
 shap.summary_plot(shap_values, X_test, feature_names=top_features[:2], show=False)
 st.pyplot(fig)
 
+# Скачивание предсказаний
 st.subheader("📥 Сохранение предсказаний")
 if st.button("💾 Скачать CSV с результатами"):
     result_df = pd.DataFrame(user_input, index=[0])
     result_df["Предсказание"] = "Паркинсон" if prediction[0] == 1 else "Здоров"
-    result_df.to_csv("prediction_results.csv", index=False)
-    st.download_button("📥 Скачать", "prediction_results.csv")
+    
+    # Преобразуем DataFrame в CSV-формат
+    csv = result_df.to_csv(index=False)
+    
+    # Создаем кнопку для скачивания
+    st.download_button(
+        label="📥 Скачать результат",
+        data=csv,
+        file_name="prediction_results.csv",
+        mime="text/csv"
+    )
