@@ -86,7 +86,7 @@ fig = px.scatter(df, x=top_features[0], y=top_features[1], color="status", title
 st.plotly_chart(fig)
 
 # 3D Визуализация
-fig = plt.figure(figsize=(10, 8))
+fig = plt.figure(figsize=(10, 10))
 ax = fig.add_subplot(111, projection="3d")
 scatter = ax.scatter(df[top_features[0]], df[top_features[1]], df[top_features[2]], c=df["status"], cmap="coolwarm")
 ax.set_xlabel(top_features[0])
