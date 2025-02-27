@@ -26,9 +26,9 @@ df = df.drop(columns=["name"])
 # Вычисляем корреляцию с целевой переменной
 correlations = df.corr()["status"].abs().sort_values(ascending=False)
 
-# Выбираем три наиболее коррелирующих признака (среди числовых)
+# Выбираем три наиболее коррелирующих признака
 valid_features = [col for col in correlations.index if df[col].nunique() > 10]
-top_features = valid_features[1:4]  # Пропускаем "status"
+top_features = valid_features[0:3]
 
 # Разделяем данные на признаки и целевую переменную
 X = df[top_features[:2]]  # Два самых коррелирующих признака
