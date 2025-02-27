@@ -32,6 +32,15 @@ df = pd.read_csv(file_path)
 
 df = df.drop(columns=["name"])
 
+with st.expander("Data"):
+  st.write("X")
+  X_raw = df.drop("status", axis=1)
+  st.dataframe(X_raw)
+
+  st.write("y")
+  y_raw = df.status
+  st.dataframe(y_raw)
+
 # Вычисляем корреляцию с целевой переменной
 correlations = df.corr()["status"].abs().sort_values(ascending=False)
 valid_features = [col for col in correlations.index if df[col].nunique() > 10]
