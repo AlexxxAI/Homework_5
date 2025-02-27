@@ -17,6 +17,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report
+import shap
 
 # Настройки страницы
 st.set_page_config(page_title="Parkinson's Prediction", layout="centered")
