@@ -32,13 +32,13 @@ df = pd.read_csv(file_path)
 df = df.drop(columns=["name"])
 
 with st.expander("Data"):
-  st.write("X")
-  X_raw = df.drop("status", axis=1)
-  st.dataframe(X_raw)
+    st.write("X")
+    X_raw = df.drop("status", axis=1)
+    st.dataframe(X_raw)
 
-  st.write("y")
-  y_raw = df.status
-  st.dataframe(y_raw)
+    st.write("y")
+    y_raw = df.status
+    st.dataframe(y_raw)
 
 # Вычисляем корреляцию с целевой переменной
 correlations = df.corr()["status"].abs().sort_values(ascending=False)
@@ -55,9 +55,9 @@ scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-# Обучение модели
-logreg_model = LogisticRegression(max_iter=565)
-logreg_model.fit(X_train_scaled, y_train)
+# Обучение модели RandomForest
+rf_model = RandomForestClassifier(random_state=42)
+rf_model.fit(X_train_scaled, y_train)
 
 # Интерфейс боковой панели
 st.sidebar.header("Введите признаки:")
@@ -75,8 +75,8 @@ prediction = None
 
 # Кнопка предсказания
 if st.sidebar.button("Сделать предсказание"):
-    prediction = logreg_model.predict(input_scaled)
-    prediction_proba = logreg_model.predict_proba(input_scaled)
+    prediction = rf_model.predict(input_scaled)
+    prediction_proba = rf_model.predict_proba(input_scaled)
     df_prediction_proba = pd.DataFrame(prediction_proba, columns=["Здоров", "Паркинсон"])
     
     st.subheader("🔍 Результаты предсказания:")
@@ -105,8 +105,9 @@ st.plotly_chart(fig)
 fig_density = px.density_contour(df, x=top_features[0], y=top_features[1], color="status", title="Плотность распределения данных")
 st.plotly_chart(fig_density)
 
+# Важность признаков
 st.subheader("📌 Важность признаков")
-shap_values = shap.Explainer(logreg_model, X_train_scaled)(X_test_scaled)
+shap_values = shap.Explainer(rf_model, X_train_scaled)(X_test_scaled)
 fig, ax = plt.subplots()
 shap.summary_plot(shap_values, X_test, feature_names=top_features[:2], show=False)
 st.pyplot(fig)
