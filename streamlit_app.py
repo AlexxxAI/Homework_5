@@ -53,10 +53,16 @@ st.write(f"📊 **Точность модели:** {logreg_model.score(X_test_sc
 # Создаём боковую панель для ввода данных
 st.sidebar.header("Введите признаки:")
 
-# Поля для ввода параметров (используем два самых коррелирующих признака)
+# Отображаемые названия для удобства
+feature_names = {
+    "spread1": "Разброс частот в голосе",
+    "PPE": "Дрожание голоса"
+}
+
+# Изменяем подписи в боковой панели
 user_input = {}
 for col in X.columns:
-    user_input[col] = st.sidebar.slider(col, float(df[col].min()), float(df[col].max()), float(df[col].mean()))
+    user_input[col] = st.sidebar.slider(feature_names[col], float(df[col].min()), float(df[col].max()), float(df[col].mean()))
 
 # Преобразуем ввод пользователя в DataFrame
 input_data = pd.DataFrame([user_input])
