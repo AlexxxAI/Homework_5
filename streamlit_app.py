@@ -18,6 +18,15 @@ from sklearn.linear_model import LogisticRegression
 import shap
 import io
 
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+import shap
+import io
+
 # Настройки страницы
 st.set_page_config(page_title="Parkinson's Prediction", layout="centered")
 
@@ -55,9 +64,9 @@ scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
-# Обучение модели RandomForest
-rf_model = RandomForestClassifier(random_state=42)
-rf_model.fit(X_train_scaled, y_train)
+# Обучение модели логистической регрессии
+logreg_model = LogisticRegression(max_iter=565)
+logreg_model.fit(X_train_scaled, y_train)
 
 # Интерфейс боковой панели
 st.sidebar.header("Введите признаки:")
@@ -75,57 +84,12 @@ prediction = None
 
 # Кнопка предсказания
 if st.sidebar.button("Сделать предсказание"):
-    prediction = rf_model.predict(input_scaled)
-    prediction_proba = rf_model.predict_proba(input_scaled)
+    prediction = logreg_model.predict(input_scaled)
+    prediction_proba = logreg_model.predict_proba(input_scaled)
     df_prediction_proba = pd.DataFrame(prediction_proba, columns=["Здоров", "Паркинсон"])
     
     st.subheader("🔍 Результаты предсказания:")
     
     if prediction[0] == 1:
         st.markdown(
-            "<div style='background-color: #ffcccc; padding: 10px; border-radius: 5px;'><strong>⚠️ Высокая вероятность болезни Паркинсона!</strong></div>",
-            unsafe_allow_html=True
-        )
-    else:
-        st.success("✅ Низкая вероятность болезни Паркинсона.")
-    
-    # График вероятностей
-    fig_prob = px.bar(df_prediction_proba.T, title="Распределение вероятностей предсказания")
-    st.plotly_chart(fig_prob)
-    
-    # Поясняющий текст
-    if prediction_proba[0][1] > 0.8:
-        st.warning("⚠️ Важно! Вероятность болезни выше 80%. Рекомендуется обратиться к специалисту.")
-
-# Визуализации
-st.subheader("📊 Визуализация данных")
-fig = px.scatter(df, x=top_features[0], y=top_features[1], color="status", title="Два наиболее коррелирующих признака")
-st.plotly_chart(fig)
-
-fig_density = px.density_contour(df, x=top_features[0], y=top_features[1], color="status", title="Плотность распределения данных")
-st.plotly_chart(fig_density)
-
-# Важность признаков
-st.subheader("📌 Важность признаков")
-shap_values = shap.Explainer(rf_model, X_train_scaled)(X_test_scaled)
-fig, ax = plt.subplots()
-shap.summary_plot(shap_values, X_test, feature_names=top_features[:2], show=False)
-st.pyplot(fig)
-
-# Когда предсказание сделано и мы генерируем DataFrame:
-if prediction is not None and st.button("💾 Скачать CSV с результатами"):
-    result_df = pd.DataFrame(user_input, index=[0])
-    result_df["Предсказание"] = "Паркинсон" if prediction[0] == 1 else "Здоров"
-    
-    # Используем StringIO для создания файла в памяти
-    csv_buffer = io.StringIO()
-    result_df.to_csv(csv_buffer, index=False)
-    csv_buffer.seek(0)
-    
-    # Создаем кнопку для скачивания
-    st.download_button(
-        label="📥 Скачать",
-        data=csv_buffer,
-        file_name="prediction_results.csv",
-        mime="text/csv"
-    )
+            "<div style='background-color: #ffcccc; padding: 10px; border-radius: 5px;'><strong>⚠
