@@ -17,7 +17,7 @@ st.title("🧠 Parkinson's Disease Prediction")
 st.write("Введите параметры, и модель предскажет вероятность заболевания.")
 
 # Загружаем данные
-file_path = "parkinsons.data"
+file_path = "https://raw.githubusercontent.com/AlexxxAI/HomeWorks/main/parkinsons.data"
 df = pd.read_csv(file_path)
 
 # Удаляем ненужный столбец "name"
