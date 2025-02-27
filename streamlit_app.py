@@ -72,17 +72,6 @@ if st.sidebar.button("Сделать предсказание"):
     if prediction_proba[0][1] > 0.8:
         st.warning("⚠️ Важно! Вероятность болезни выше 80%. Рекомендуется обратиться к специалисту.")
 
-# Загрузка CSV-файла
-st.subheader("📂 Загрузите CSV-файл для пакетного анализа")
-uploaded_file = st.file_uploader("Выберите CSV-файл", type=["csv"])
-if uploaded_file is not None:
-    df_uploaded = pd.read_csv(uploaded_file)
-    df_uploaded_scaled = scaler.transform(df_uploaded[top_features[:2]])
-    batch_predictions = logreg_model.predict(df_uploaded_scaled)
-    df_uploaded["prediction"] = batch_predictions
-    st.write("🔍 Результаты пакетного предсказания:")
-    st.dataframe(df_uploaded)
-
 # Визуализации
 st.subheader("📊 Визуализация данных")
 fig = px.scatter(df, x=top_features[0], y=top_features[1], color="status", title="Два наиболее коррелирующих признака")
