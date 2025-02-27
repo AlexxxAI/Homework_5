@@ -16,6 +16,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 import shap
+import io
 
 # Настройки страницы
 st.set_page_config(page_title="Parkinson's Prediction", layout="centered")
@@ -112,20 +113,20 @@ st.pyplot(fig)
 
 # Скачивание предсказаний
 st.subheader("📥 Сохранение предсказаний")
-if prediction is not None:
-    if st.button("💾 Скачать CSV с результатами"):
-        result_df = pd.DataFrame(user_input, index=[0])
-        result_df["Предсказание"] = "Паркинсон" if prediction[0] == 1 else "Здоров"
-        
-        # Преобразуем DataFrame в CSV-формат
-        csv = result_df.to_csv(index=False)
-        
-        # Создаем кнопку для скачивания
-        st.download_button(
-            label="📥 Скачать результат",
-            data=csv,
-            file_name="prediction_results.csv",
-            mime="text/csv"
-        )
-else:
-    st.warning("⚠️ Пожалуйста, сделайте предсказание перед скачиванием.")
+# Когда предсказание сделано и мы генерируем DataFrame:
+if st.button("💾 Скачать CSV с результатами"):
+    result_df = pd.DataFrame(user_input, index=[0])
+    result_df["Предсказание"] = "Паркинсон" if prediction[0] == 1 else "Здоров"
+    
+    # Используем StringIO для создания файла в памяти
+    csv_buffer = io.StringIO()
+    result_df.to_csv(csv_buffer, index=False)
+    csv_buffer.seek(0)
+    
+    # Создаем кнопку для скачивания
+    st.download_button(
+        label="📥 Скачать",
+        data=csv_buffer,
+        file_name="prediction_results.csv",
+        mime="text/csv"
+    )
