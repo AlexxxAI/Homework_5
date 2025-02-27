@@ -112,7 +112,7 @@ shap.summary_plot(shap_values, X_test, feature_names=top_features[:2], show=Fals
 st.pyplot(fig)
 
 # Когда предсказание сделано и мы генерируем DataFrame:
-if st.button("💾 Скачать CSV с результатами"):
+if prediction is not None and st.button("💾 Скачать CSV с результатами"):
     result_df = pd.DataFrame(user_input, index=[0])
     result_df["Предсказание"] = "Паркинсон" if prediction[0] == 1 else "Здоров"
     
