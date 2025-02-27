@@ -43,7 +43,7 @@ logreg_model.fit(X_train_scaled, y_train)
 
 # Интерфейс боковой панели
 st.sidebar.header("Введите признаки:")
-feature_names = {"spread1": "Разброс частот", "PPE": "Дрожание голоса"}
+feature_names = {"spread1": "Разброс частот (spread1)", "PPE": "Дрожание голоса (PPE)"}
 
 user_input = {}
 for col in X.columns:
