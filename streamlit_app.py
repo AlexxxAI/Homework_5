@@ -13,7 +13,7 @@ from sklearn.metrics import classification_report
 st.set_page_config(page_title="Parkinson's Prediction", layout="centered")
 
 # Заголовок приложения
-st.title("🧠 Parkinson's Disease Prediction")
+st.title("🧠 Прогнозирование болезни Паркинсона")
 st.write("Введите параметры, и модель предскажет вероятность заболевания.")
 
 # Загружаем данные
@@ -82,7 +82,7 @@ else:
     st.success("✅ Низкая вероятность болезни Паркинсона.")
 
 # Показываем вероятность классов
-df_prediction_proba = pd.DataFrame(prediction_proba, columns=["Healthy", "Parkinson"])
+df_prediction_proba = pd.DataFrame(prediction_proba, columns=["Здоров", "Паркинсон"])
 st.dataframe(df_prediction_proba)
 
 # Визуализация данных
