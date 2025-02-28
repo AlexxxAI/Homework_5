@@ -2,7 +2,7 @@
 # 1) Кнопка "Сделать предсказание" вместо мгновенного обновления при изменении ползунков
 # 2) Диаграмма плотности распределения данных
 # 3) Если вероятность болезни >80%, выходит предупреждающий текст
-# 4) Feature Importance – визуализация важности признаков
+# 4) SHAP Force Plot – визуализация вклада каждого признака в предсказание
 # 5) Сохранение пользовательского ввода
 # 6) Загрузка предикта в CSV файл
 # 7) Режимы интерфейса – "Простой" и "Расширенный" режимы для удобства
@@ -144,6 +144,10 @@ if st.sidebar.button("Сделать предсказание"):
     shap.initjs()
     explainer = shap.Explainer(logreg_model, X_train_scaled)
     shap_values = explainer(input_scaled)
+    # Добавление комментария
+    st.write(
+        "Этот график показывает, как каждый признак влияет на предсказание модели, указывая, способствует ли он вероятности заболевания Паркинсона или наоборот."
+    )
     # Сохраняем force plot в HTML
     shap.force_plot(shap_values.base_values[0], shap_values.values[0], input_df.iloc[0], feature_names=top_features, matplotlib=False, show=False)
     shap_html = shap.force_plot(shap_values.base_values[0], shap_values.values[0], input_df.iloc[0], feature_names=top_features, matplotlib=False, show=False)
