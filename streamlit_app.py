@@ -69,8 +69,15 @@ user_input = {}
 for col in X.columns:
     user_input[col] = st.sidebar.slider(feature_names[col], float(df[col].min()), float(df[col].max()), float(df[col].mean()))
 
-input_data = pd.DataFrame([user_input])
-input_scaled = scaler.transform(input_data)
+input_df = pd.DataFrame([user_input])
+input_penguins = pd.concat([input_df, X_raw], axis=0)
+input_scaled = scaler.transform(input_df)
+
+with st.expander("Data Preparation"):
+    st.write("**Input Data**")
+    st.dataframe(input_df)
+    st.write("**Combined Data** (input row + original data)")
+    st.dataframe(input_penguins)
 
 # Инициализация переменной предсказания как None
 prediction = None
@@ -91,13 +98,35 @@ if st.sidebar.button("Сделать предсказание"):
     else:
         st.success("✅ Низкая вероятность болезни Паркинсона.")
     
-    # График вероятностей
-    fig_prob = px.bar(df_prediction_proba.T, title="Распределение вероятностей предсказания")
-    st.plotly_chart(fig_prob)
+    # Вывод вероятностей через ProgressColumn
+    st.dataframe(
+        df_prediction_proba,
+        column_config={
+            "Здоров": st.column_config.ProgressColumn(
+                "Здоров",
+                format="%f",
+                width="medium",
+                min_value=0,
+                max_value=1
+            ),
+            "Паркинсон": st.column_config.ProgressColumn(
+                "Паркинсон",
+                format="%f",
+                width="medium",
+                min_value=0,
+                max_value=1
+            ),
+        },
+        hide_index=True
+    )
     
-    # Поясняющий текст
-    if prediction_proba[0][1] > 0.8:
-        st.warning("⚠️ Важно! Вероятность болезни выше 80%. Рекомендуется обратиться к специалисту.")
+    # Вывод предсказанного класса
+    parkinson_labels = np.array(["Здоров", "Паркинсон"])
+    st.success(f"Predicted status: **{parkinson_labels[prediction][0]}**")
+    
+    # Гистограмма признака
+    fig_hist = px.histogram(df, x=top_features[0], nbins=30, title=f"Распределение {top_features[0]}")
+    st.plotly_chart(fig_hist)
 
 # Визуализации
 st.subheader("📊 Визуализация данных")
