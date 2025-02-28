@@ -158,7 +158,6 @@ if st.sidebar.button("Сделать предсказание"):
     # Вставляем HTML в Streamlit
     st.components.v1.html(shap_html, height=300)
     
-
 # Визуализации
 st.subheader("📊 Визуализация данных")
 fig = px.scatter(df, x=top_features[0], y=top_features[1], color="status", title="Два наиболее коррелирующих признака")
