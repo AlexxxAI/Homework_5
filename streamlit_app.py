@@ -3,7 +3,8 @@
 # 2) Диаграмма плотности распределения данных
 # 3) Если вероятность болезни >80%, выходит предупреждающий текст
 # 4) Feature Importance – визуализация важности признаков.
-# 5) Сохранение предсказаний – возможность скачать CSV
+# 5) Сохранение и загрузка пользовательского ввода – возможность сохранять и загружать введенные параметры.
+# 6) Режимы интерфейса – "Простой" и "Расширенный" режимы для удобства.
 
 
 import streamlit as st
@@ -139,11 +140,12 @@ if st.sidebar.button("Сделать предсказание"):
     st.download_button("📥 Скачать предсказание", data=csv, file_name="prediction.csv", mime="text/csv")
 
     # SHAP Force Plot
-    shap_values = shap.Explainer(logreg_model, X_train_scaled)(input_scaled)
+    shap.initjs()
+    explainer = shap.Explainer(logreg_model, X_train_scaled)
+    shap_values = explainer(input_scaled)
     st.subheader("📊 Интерпретация предсказания (SHAP)")
-    fig, ax = plt.subplots()
-    shap.force_plot(shap_values.base_values[0], shap_values.values[0], input_df.iloc[0], feature_names=top_features, matplotlib=True, show=False)
-    st.pyplot(fig)
+    shap_html = shap.force_plot(shap_values.base_values[0], shap_values.values[0], input_df.iloc[0], feature_names=top_features, matplotlib=False)
+    st.components.v1.html(shap_html, height=300)
 
 # Визуализации
 st.subheader("📊 Визуализация данных")
