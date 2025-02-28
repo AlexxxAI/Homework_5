@@ -85,7 +85,7 @@ input_scaled = scaler.transform(input_df)
 
 # Вывод блока подготовки данных, если выбран расширенный режим
 if mode == "Расширенный":
-    with st.expander("Data Preparation"):
+    with st.expander("Пользовательские данные"):
         st.write("**Input Data**")
         st.dataframe(input_df)
 
