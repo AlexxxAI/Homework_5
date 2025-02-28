@@ -31,6 +31,8 @@ df = pd.read_csv(file_path)
 
 df = df.drop(columns=["name"])
 
+st.write("Данные загружены!")
+
 with st.expander("Data"):
     st.write("X")
     X_raw = df.drop("status", axis=1)
@@ -111,6 +113,8 @@ shap_values = shap.Explainer(logreg_model, X_train_scaled)(X_test_scaled)
 fig, ax = plt.subplots()
 shap.summary_plot(shap_values, X_test, feature_names=top_features[:2], show=False)
 st.pyplot(fig)
+
+st.write("🔍 Этот график показывает влияние каждого признака на предсказание модели. Чем дальше точка от 0, тем больше влияние признака.")
 
 # Когда предсказание сделано и мы генерируем DataFrame:
 if prediction is not None and st.button("💾 Скачать CSV с результатами"):
