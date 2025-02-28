@@ -61,7 +61,7 @@ logreg_model.fit(X_train_scaled, y_train)
 
 # Интерфейс боковой панели
 st.sidebar.header("Введите признаки:")
-feature_names = {top_features[0]: "Признак 1", top_features[1]: "Признак 2"}
+feature_names = {"spread1": "Разброс частот (spread1)", "PPE": "Дрожание голоса (PPE)"}
 
 user_input = {}
 for col in X.columns:
@@ -134,9 +134,9 @@ fig_density = px.density_contour(df, x=top_features[0], y=top_features[1], color
 st.plotly_chart(fig_density)
 
 # Гистограмма распределения признаков
-fig_hist1 = px.histogram(df, x=top_features[0], nbins=30, title=f"Распределение {top_features[0]}")
+fig_hist1 = px.histogram(df, x=top_features[0], nbins=30, title=f"Распределение {feature_names[top_features[0]]}")
 st.plotly_chart(fig_hist1)
-fig_hist2 = px.histogram(df, x=top_features[1], nbins=30, title=f"Распределение {top_features[1]}")
+fig_hist2 = px.histogram(df, x=top_features[1], nbins=30, title=f"Распределение {feature_names[top_features[1]]}")
 st.plotly_chart(fig_hist2)
 
 # Важность признаков
