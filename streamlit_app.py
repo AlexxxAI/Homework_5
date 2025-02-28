@@ -43,6 +43,13 @@ X = df[top_features]
 y = df["status"]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
 
+# Вывод исходных данных
+with st.expander("Исходные данные"):
+    st.write("**Признаки (X)**")
+    st.dataframe(X)
+    st.write("**Целевая переменная (y)**")
+    st.dataframe(y)
+
 # Стандартизация
 scaler = StandardScaler()
 X_train_scaled = scaler.fit_transform(X_train)
@@ -63,6 +70,7 @@ for col in X.columns:
 input_df = pd.DataFrame([user_input])
 input_scaled = scaler.transform(input_df)
 
+# Вывод блока подготовки данных
 with st.expander("Data Preparation"):
     st.write("**Input Data**")
     st.dataframe(input_df)
@@ -112,6 +120,10 @@ if st.sidebar.button("Сделать предсказание"):
     # Вывод предсказанного класса
     parkinson_labels = np.array(["Здоров", "Паркинсон"])
     st.success(f"Predicted status: **{parkinson_labels[prediction][0]}**")
+    
+    # Кнопка для скачивания предсказаний
+    csv = df_prediction_proba.to_csv(index=False).encode('utf-8')
+    st.download_button("📥 Скачать предсказание", data=csv, file_name="prediction.csv", mime="text/csv")
 
 # Визуализации
 st.subheader("📊 Визуализация данных")
