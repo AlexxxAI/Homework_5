@@ -33,22 +33,13 @@ df = df.drop(columns=["name"])
 
 st.write("Данные загружены!")
 
-with st.expander("Data"):
-    st.write("X")
-    X_raw = df.drop("status", axis=1)
-    st.dataframe(X_raw)
-
-    st.write("y")
-    y_raw = df.status
-    st.dataframe(y_raw)
-
 # Вычисляем корреляцию с целевой переменной
 correlations = df.corr()["status"].abs().sort_values(ascending=False)
 valid_features = [col for col in correlations.index if df[col].nunique() > 10]
-top_features = valid_features[:3]
+top_features = valid_features[:2]  # Оставляем только два признака
 
 # Разделяем данные
-X = df[top_features[:2]]  # Два самых коррелирующих признака
+X = df[top_features]
 y = df["status"]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
 
@@ -63,21 +54,18 @@ logreg_model.fit(X_train_scaled, y_train)
 
 # Интерфейс боковой панели
 st.sidebar.header("Введите признаки:")
-feature_names = {"spread1": "Разброс частот (spread1)", "PPE": "Дрожание голоса (PPE)"}
+feature_names = {top_features[0]: "Признак 1", top_features[1]: "Признак 2"}
 
 user_input = {}
 for col in X.columns:
     user_input[col] = st.sidebar.slider(feature_names[col], float(df[col].min()), float(df[col].max()), float(df[col].mean()))
 
 input_df = pd.DataFrame([user_input])
-input_penguins = pd.concat([input_df, X_raw], axis=0)
 input_scaled = scaler.transform(input_df)
 
 with st.expander("Data Preparation"):
     st.write("**Input Data**")
     st.dataframe(input_df)
-    st.write("**Combined Data** (input row + original data)")
-    st.dataframe(input_penguins)
 
 # Инициализация переменной предсказания как None
 prediction = None
@@ -87,6 +75,7 @@ if st.sidebar.button("Сделать предсказание"):
     prediction = logreg_model.predict(input_scaled)
     prediction_proba = logreg_model.predict_proba(input_scaled)
     df_prediction_proba = pd.DataFrame(prediction_proba, columns=["Здоров", "Паркинсон"])
+    df_prediction_proba = df_prediction_proba.round(2)  # Округляем до двух знаков
     
     st.subheader("🔍 Результаты предсказания:")
     
@@ -104,14 +93,14 @@ if st.sidebar.button("Сделать предсказание"):
         column_config={
             "Здоров": st.column_config.ProgressColumn(
                 "Здоров",
-                format="%f",
+                format="%.2f",
                 width="medium",
                 min_value=0,
                 max_value=1
             ),
             "Паркинсон": st.column_config.ProgressColumn(
                 "Паркинсон",
-                format="%f",
+                format="%.2f",
                 width="medium",
                 min_value=0,
                 max_value=1
@@ -123,10 +112,6 @@ if st.sidebar.button("Сделать предсказание"):
     # Вывод предсказанного класса
     parkinson_labels = np.array(["Здоров", "Паркинсон"])
     st.success(f"Predicted status: **{parkinson_labels[prediction][0]}**")
-    
-    # Гистограмма признака
-    fig_hist = px.histogram(df, x=top_features[0], nbins=30, title=f"Распределение {top_features[0]}")
-    st.plotly_chart(fig_hist)
 
 # Визуализации
 st.subheader("📊 Визуализация данных")
@@ -136,29 +121,17 @@ st.plotly_chart(fig)
 fig_density = px.density_contour(df, x=top_features[0], y=top_features[1], color="status", title="Плотность распределения данных")
 st.plotly_chart(fig_density)
 
+# Гистограмма распределения признаков
+fig_hist1 = px.histogram(df, x=top_features[0], nbins=30, title=f"Распределение {top_features[0]}")
+st.plotly_chart(fig_hist1)
+fig_hist2 = px.histogram(df, x=top_features[1], nbins=30, title=f"Распределение {top_features[1]}")
+st.plotly_chart(fig_hist2)
+
 # Важность признаков
 st.subheader("📌 Важность признаков")
 shap_values = shap.Explainer(logreg_model, X_train_scaled)(X_test_scaled)
 fig, ax = plt.subplots()
-shap.summary_plot(shap_values, X_test, feature_names=top_features[:2], show=False)
+shap.summary_plot(shap_values, X_test, feature_names=top_features, show=False)
 st.pyplot(fig)
 
 st.write("🔍 Этот график показывает влияние каждого признака на предсказание модели. Чем дальше точка от 0, тем больше влияние признака.")
-
-# Когда предсказание сделано и мы генерируем DataFrame:
-if prediction is not None and st.button("💾 Скачать CSV с результатами"):
-    result_df = pd.DataFrame(user_input, index=[0])
-    result_df["Предсказание"] = "Паркинсон" if prediction[0] == 1 else "Здоров"
-    
-    # Используем StringIO для создания файла в памяти
-    csv_buffer = io.StringIO()
-    result_df.to_csv(csv_buffer, index=False)
-    csv_buffer.seek(0)
-    
-    # Создаем кнопку для скачивания
-    st.download_button(
-        label="📥 Скачать",
-        data=csv_buffer,
-        file_name="prediction_results.csv",
-        mime="text/csv"
-    )
