@@ -141,6 +141,7 @@ if st.sidebar.button("Сделать предсказание"):
     st.download_button("📥 Скачать предсказание", data=csv, file_name="prediction.csv", mime="text/csv")
 
     # SHAP Force Plot
+    st.subheader("📊 Интерпретация предсказания с помощью SHAP: Как каждый признак влияет на вероятность заболевания Паркинсона")
     shap.initjs()
     explainer = shap.Explainer(logreg_model, X_train_scaled)
     shap_values = explainer(input_scaled)
